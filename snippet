@@ -1,0 +1,14 @@
+
+/*optional addtional payments*/
+say "how much addtional payments each month ?(Enter zero if none)"
+parse pull addpay
+/*for a monthly compounded intrest i used the investopedia ammorizarion formula (Allred, 2025) ;A = P * (i * (1 + i) ^ n)/((1 + i) ^ n - 1)*/
+rate= (irate/100)/12 /*periodic intrest rate*/
+time= time*12
+
+
+payment = principal*[(rate*(1+rate)^time)/((1+rate)-1)]
+do until principal =0
+principal = principal -payment-addpay
+say "principal is now "principal
+end

@@ -1,6 +1,6 @@
 say "enter loan amount" 
 parse pull principal
-
+/*I used this format to input the rest of the information*/
 if principal =0 THEN do
 
     say "congrats you're debt-free!"
@@ -15,7 +15,7 @@ if principal <0  then do
 end 
 
 say "your loan amount is " principal
-
+/*loan intrest rate*/
 say "enter loan intrest rate" 
 parse pull Irate
 
@@ -27,8 +27,8 @@ if irate <0  then do
     end
 end 
 
-say "your intrest rate is " irate 
-
+say "your intrest rate is " irate "%"
+/*loan term in years*/
 say "enter your loan term in years " 
 parse pull time
 
@@ -39,14 +39,17 @@ if time <0  then do
         parse pull time
     end
 end 
-month = time *12
 
-r=irate/100
-n=month
-p= principal
+/*optional addtional payments*/
+say "how much addtional payments each month ?(Enter zero if none)"
+parse pull addpay
+/*for a monthly compounded intrest i used the investopedia ammorizarion formula (Allred, 2025) ;A = P * (i * (1 + i) ^ n)/((1 + i) ^ n - 1)*/
+rate= (irate/100)/12 /*periodic intrest rate*/
+time= time*12
 
-payment = (p * r * (1 + r) ^ n) / ((1 + r) ^ n - 1)
+
+payment = principal*[(rate*(1+rate)^time)/((1+rate)-1)]
 do until principal =0
-principal = principal -payment
+principal = principal -payment-addpay
 say "principal is now "principal
 end

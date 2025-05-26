@@ -17,7 +17,7 @@ end
 say "your loan amount is " principal
 
 say "enter loan intrest rate" 
-parse pull IRate
+parse pull Irate
 
 if irate <0  then do 
     do until irate >=0
@@ -40,7 +40,13 @@ if time <0  then do
     end
 end 
 month = time *12
-payment
-do until principal = 0
 
-    
+r=irate/100
+n=month
+p= principal
+
+payment = (p * r * (1 + r) ^ n) / ((1 + r) ^ n - 1)
+do until principal =0
+principal = principal -payment
+say "principal is now "principal
+end

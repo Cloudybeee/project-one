@@ -44,12 +44,22 @@ end
 say "how much addtional payments each month ?(Enter zero if none)"
 parse pull addpay
 /*for a monthly compounded intrest i used the investopedia ammorizarion formula (Allred, 2025) ;A = P * (i * (1 + i) ^ n)/((1 + i) ^ n - 1)*/
-rate= (irate/100)/12 /*periodic intrest rate*/
+rate= ((irate/100)/12) /*periodic intrest rate*/
+say rate
 time= time*12
 
 
-payment = principal*[(rate*(1+rate)^time)/((1+rate)-1)]
-do until principal =0
-principal = principal -payment-addpay
+payment = principal*((rate*(1+rate)**time)/(((1+rate)**time)-1))
+say "your scheduled monthly payment is :" payment
+do until principal <=payment
+intrest = rate* principal
+say "your intrest is "intrest
+say "your beginning balance is" principal 
+principal = principal+intrest -payment-addpay
 say "principal is now "principal
 end
+intrest = rate* principal
+say "your intrest is "intrest
+say "your beginning balance is" principal 
+principal = principal+intrest -payment
+say "principal is now "principal+(principal*-1)

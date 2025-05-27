@@ -29,26 +29,27 @@ end
 
 say "your intrest rate is " irate "%"
 /*loan term in years*/
-say "enter your loan term in years " 
+say "enter your loan term in whole years " 
 parse pull time
 
-if time <0  then do 
-    do until time >=0
+if time <1  then  
+    do until time >=1
         say " term in years must be greater than 0" 
         say "enter your loan term in years" 
         parse pull time
     end
-end 
+
 
 /*optional addtional payments*/
 say "how much addtional payments each month ?(Enter zero if none)"
 parse pull addpay
 /*for a monthly compounded intrest i used the investopedia ammorizarion formula (Allred, 2025) ;A = P * (i * (1 + i) ^ n)/((1 + i) ^ n - 1)*/
 rate= ((irate/100)/12) /*periodic intrest rate*/
-say rate
+
 time= time*12
-
-
+totalp=0
+totali= 0
+/*loan payoff loop*/
 payment = principal*((rate*(1+rate)**time)/(((1+rate)**time)-1))
 say "your scheduled monthly payment is :" payment
 do until principal <=payment
@@ -57,9 +58,24 @@ say "your intrest is "intrest
 say "your beginning balance is" principal 
 principal = principal+intrest -payment-addpay
 say "principal is now "principal
+totali= totali +intrest
+say "youve paid" totalp "in total intrest so far"
+totalp= totalp +payment+addpay
+say "youve done" totalp "in total payments so far"
 end
+
+
+addpay= 0
 intrest = rate* principal
+payment= principal+intrest
 say "your intrest is "intrest
 say "your beginning balance is" principal 
-principal = principal+intrest -payment
-say "principal is now "principal+(principal*-1)
+principal = principal+intrest -payment-addpay
+say "your principal is now "principal
+totalp= totalp +payment+addpay
+
+say "**Final Payments**"
+say "youve done" totalp "in total payments"
+totali= totali +intrest
+say "youve paid" totali "in total intrest"
+

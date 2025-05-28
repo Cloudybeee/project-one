@@ -26,40 +26,74 @@ if irate <0  then do
         parse pull irate
     end
 end 
+rate= ((irate/100)/12) /*periodic intrest rate*/
 
 say "your intrest rate is " irate "%"
 /*loan term in years*/
-say "enter your loan term in years " 
+say "enter your loan term in whole years " 
 parse pull time
 
-if time <0  then do 
-    do until time >=0
+if time <1  then  
+    do until time >=1
         say " term in years must be greater than 0" 
         say "enter your loan term in years" 
         parse pull time
     end
-end 
+
 
 /*optional addtional payments*/
 say "how much addtional payments each month ?(Enter zero if none)"
 parse pull addpay
 /*for a monthly compounded intrest i used the investopedia ammorizarion formula (Allred, 2025) ;A = P * (i * (1 + i) ^ n)/((1 + i) ^ n - 1)*/
-rate= ((irate/100)/12) /*periodic intrest rate*/
-say rate
+
+
 time= time*12
+totalp=0
+totali= 0
+count =0
+totala=0
 
-
+/*loan payoff loop*/
 payment = principal*((rate*(1+rate)**time)/(((1+rate)**time)-1))
-say "your scheduled monthly payment is :" payment
+say "your scheduled monthly payment is : " payment+addpay
 do until principal <=payment
 intrest = rate* principal
-say "your intrest is "intrest
+count=count+1
+totali= totali +intrest
+totalp= totalp +payment+addpay
+totala=totala+addpay
+
+principal = principal+intrest -payment-addpay
+say"Payment : "count
+say "your beginning balance is: " principal 
+say "principal is now "principal
+say "your intrest for this pay period is "intrest
+say "youve paid" totali "in total intrest so far"
+say "youve done" totalp "in total payments so far"
+say "you paid an extra "addpay" in payments toward your principle "
+
+say " "
+end
+/*loop ends*/
+
+
+
+/*last payoff squence*/
+addpay= 0
+intrest = rate* principal
+payment= principal+intrest
+count=count+1
+say"Payment period: "count
+say "your intrest for this pay period is "intrest
 say "your beginning balance is" principal 
 principal = principal+intrest -payment-addpay
-say "principal is now "principal
-end
-intrest = rate* principal
-say "your intrest is "intrest
-say "your beginning balance is" principal 
-principal = principal+intrest -payment
-say "principal is now "principal+(principal*-1)
+say "your principal is now "principal
+totalp= totalp +payment+addpay
+say" "
+
+/**Final summary**/
+say "**Final Summary**"
+say "Congrats! youve completed " totalp "in total payments"
+totali= totali +intrest
+say "youve paid " totali "in overall intrest"
+say "youve paid "totala" in extra payments in a period of "count" months for savings of "

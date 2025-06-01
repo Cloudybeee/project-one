@@ -13,6 +13,9 @@ if principal <0  then do
         parse pull principal
     end
 end 
+/*create two principals for roi comparison*/
+principal1=principal
+principal2=principal
 
 say "your loan amount is " principal
 /*loan intrest rate*/
@@ -26,7 +29,7 @@ if irate <0  then do
         parse pull irate
     end
 end 
-rate= ((irate/100)/12) /*periodic intrest rate*/
+
 
 say "your intrest rate is " irate "%"
 /*loan term in years*/
@@ -39,34 +42,53 @@ if time <1  then
         say "enter your loan term in years" 
         parse pull time
     end
+rate= ((irate/100)/12) /*periodic intrest rate*/
 
+/*roi loop*/
+time=time*12
+payment = principal1*((rate*(1+rate)**time)/(((1+rate)**time)-1))
+totali1 =0
+
+do until principal1 <=payment
+intrest = rate* principal1
+totali1= totali1+intrest
+principal1 = principal1+intrest -payment
+end
+
+intrest = rate* principal1
+payment= principal1+intrest
+totali1= totali1 +intrest
+principal1 = principal1+intrest -payment
+
+/*loop end*/
 
 /*optional addtional payments*/
-say "how much addtional payments each month ?(Enter zero if none)"
+say "youre on track to pay "totali1" in intrest ,how much extra would you like to pay each month ?(Enter zero if none)"
 parse pull addpay
 /*for a monthly compounded intrest i used the investopedia ammorizarion formula (Allred, 2025) ;A = P * (i * (1 + i) ^ n)/((1 + i) ^ n - 1)*/
 
 
-time= time*12
+
 totalp=0
 totali= 0
 count =0
 totala=0
 
 /*loan payoff loop*/
-payment = principal*((rate*(1+rate)**time)/(((1+rate)**time)-1))
-say "your scheduled monthly payment is : " payment+addpay
-do until principal <=payment
-intrest = rate* principal
+payment = principal2*((rate*(1+rate)**time)/(((1+rate)**time)-1))
+say "your scheduled monthly payment is : " payment
+do until principal2 <=payment
+intrest = rate* principal2
 count=count+1
 totali= totali +intrest
 totalp= totalp +payment+addpay
 totala=totala+addpay
 
-principal = principal+intrest -payment-addpay
+
 say"Payment : "count
-say "your beginning balance is: " principal 
-say "principal is now "principal
+say "your beginning balance is: " principal2 
+principal2 = principal2+intrest -payment-addpay
+say "principal is now "principal2
 say "your intrest for this pay period is "intrest
 say "youve paid" totali "in total intrest so far"
 say "youve done" totalp "in total payments so far"
@@ -76,24 +98,28 @@ say " "
 end
 /*loop ends*/
 
-
-
 /*last payoff squence*/
 addpay= 0
-intrest = rate* principal
-payment= principal+intrest
+intrest = rate* principal2
+payment= principal2+intrest
 count=count+1
-say"Payment period: "count
-say "your intrest for this pay period is "intrest
-say "your beginning balance is" principal 
-principal = principal+intrest -payment-addpay
-say "your principal is now "principal
 totalp= totalp +payment+addpay
+totali= totali +intrest
+
+say"Payment period: "count
+say "your scheduled monthly payment is : " payment
+say "your beginning balance is" principal2
+
+principal2 = principal2+intrest -payment-addpay
+say "your principal is now "principal2
+say "your intrest for this pay period is "intrest
+say "you paid an extra "addpay" in payments toward your principle "
 say" "
 
 /**Final summary**/
+save =totali1-totali
+roi= (save)/(totali1+principal)
 say "**Final Summary**"
 say "Congrats! youve completed " totalp "in total payments"
-totali= totali +intrest
 say "youve paid " totali "in overall intrest"
-say "youve paid "totala" in extra payments in a period of "count" months for savings of "
+say "youve paid "totala" in extra payments in a period of "count" months for savings of "save" on intrest for this loan; Along with a roi of "roi"."

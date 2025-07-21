@@ -1,0 +1,176 @@
+ /*rexx*/
+
+say "enter loan amount"
+parse pull principal
+/*I used this format to input the rest of the information*/
+if principal =0 THEN do
+
+    say "congrats you're debt-free!"
+    exit
+end
+if principal <0  then do
+    do until principal >0
+        say "loan amount must be greater than 0"
+        say "enter loan amount"
+        parse pull principal
+    end
+end
+/*create two principals for roi comparison*/
+principal1=principal
+principal2=principal
+
+say "your loan amount is " principal
+/*loan intrest rate*/
+say "enter loan intrest rate"
+parse pull Irate
+
+if irate <0  then do
+    do until irate >=0
+        say "intrest rate must be greater than 0"
+        say "enter intrest rate"
+        parse pull irate
+    end
+end
+
+say "your intrest rate is " irate "%"
+/*loan term in years*/
+say "enter your loan term in whole years "
+parse pull time
+
+if time <1  then
+    do until time >=1
+        say " term in years must be greater than 0"
+        say "enter your loan term in years"
+        parse pull time
+    end
+rate= ((irate/100)/12) /*periodic intrest rate*/
+
+/*roi loop*/
+time=time*12
+payment = principal1*((rate*(1+rate)**time)/(((1+rate)**time)-1))
+totali1 =0
+
+do until principal1 <=payment
+intrest = rate* principal1
+totali1= totali1+intrest
+principal1 = principal1+intrest -payment
+end
+
+intrest = rate* principal1
+payment= principal1+intrest
+totali1= totali1 +intrest
+principal1 = principal1+intrest -payment
+
+/*loop end*/
+/*optional addtional payments*/
+say "youre on track to pay "totali1" in intrest ,how much extra would you like to pay each month ?(Enter zero if none)"
+parse pull addpay
+/*for a monthly compounded intrest i used the investopedia ammorizarion formula (Allred, 2025) ;A = P * (i * (1 + i) ^ n)/((1 + i) ^ n - 1)*/
+
+say "would you like your payment details to be executed to html or excel"
+parse pull datatype 
+
+if datatype \= "html" or "excel" then do 
+say "Please choose between html or excel"
+parse pull datatype
+end
+totalp=0
+totali= 0
+count =0
+totala=0
+endbal=0
+
+
+if datatype ="excel"then do 
+
+/*loan payoff loop*/
+payment = principal2*((rate*(1+rate)**time)/(((1+rate)**time)-1))
+say "your scheduled monthly payment is : " payment
+say "| Payment Number | Beginning balance | Scheduled Payment | Extra Payment | Total Payment | Intrest | Ending Balance | Total Intrest | "
+
+
+do until principal2 <=payment
+intrest = rate* principal2
+count=count+1
+totali= totali +intrest
+totalp= totalp +payment+addpay
+totala=totala+addpay
+endbal= intrest+principal2-payment-addpay
+say "        "count"           " trunc(principal2,2)"              "trunc(payment,2) "           " addpay"           "trunc(payment+addpay,2) "               "trunc(intrest,2) "           "trunc(endbal,2)"        "trunc(totali,2)" "
+principal2=intrest+principal2-payment-addpay
+end
+/*loop ends*/
+
+/*last payoff squence*/
+addpay= 0
+/*last payoff squence*/
+addpay= 0
+intrest = rate* principal2
+payment= principal2+intrest
+count=count+1
+totalp= totalp +payment+addpay
+totali= totali +intrest
+endbal= intrest+principal2-payment-addpay
+
+say "        "count"           " trunc(principal2,2)"              "trunc(payment,2) "           " addpay"           "trunc(payment+addpay,2) "               "trunc(intrest,2) "           "trunc(endbal,2)"        "trunc(totali,2)" "
+
+
+principal2=intrest+principal2-payment-addpay
+
+
+
+/**Final summary**/
+save =trunc(totali1-totali,2)
+roi= trunc(((save)/(totali1+principal))*100,2)
+say "**Final Summary**"
+say "Congrats! youve completed "trunc(totalp,2) "in total payments"
+say "youve paid "trunc(totali,2) "in overall intrest"
+say "youve paid "trunc(totala,2)" in extra payments in a period of "count" months for savings of "trunc(save,2)" on intrest for this loan; Along with a roi of "roi"%."
+end
+
+if datatype ="html" then do 
+say"<doctype! html>"
+say"<html>"
+say"<style>"
+say"table, th, td {                                              border:1px solid black;                                         } "
+say"</style>"
+say"<h1>""Loan Calculator""</h1>"
+say"<body>"
+
+say "<table style=""width:100%">""
+say " <tr>""
+say "    <td>Payment Number</td>"
+say "    <td>Beginning balance</td>"
+say "    <td>Scheduled Payment</td>"
+say "    <td>Extra Payment</td>"
+say "    <td>Total Payment</td>"
+say "    <td>Intrest</td>"
+say "    <td>Ending Balance</td>"
+say "  </tr>"
+say "  <tr>"
+say "    <td><td>"
+say "    <td></td>"
+say "    <td></td>"
+say "    <td></td>"
+say "    <td></td>"
+say "    <td></td>"
+
+say "  </tr>"
+say "</table>"
+say"</body>"
+say "</p> **Final Summary**</p>"
+say "<p>Congrats! youve completed "trunc(totalp,2)" in total payments </p>"
+say "youve paid "trunc(totali,2) "in overall intrest"
+say "<p>youve paid "trunc(totala,2)" in extra payments in a period of "count" months for savings of "trunc(save,2)" on intrest for this loan; Along with a roi of "roi"%.</p>"
+say "</html>"
+dataset = "'S990043.rexx.p1.htmlout'"
+If SYSDSN(dataset) = "DATASET NOT FOUND" Then
+    DO
+        /* Dataset does not exist */
+        "ALLOC F(HTML) DA("dataset") DSORG(PS) NEW",
+        "BLKSIZE(6160) RECFM(V M)"
+    END
+ELSE
+    "ALLOC F(HTML) DA("dataset") SHR";
+"FREE F(HTML)"
+end
